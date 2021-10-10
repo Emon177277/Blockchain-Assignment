@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.4;
 
 contract Escrow{
@@ -14,9 +15,9 @@ contract Escrow{
     address arbitror;
     
     enum CONFIRMATION_STATUS { 
-        INACTIVE            ,           // 0, this is the default status 
-        FINALIZE_PAYMENT    ,           // 2, when depositor confirms that recipient can recieve the money
-        PENDING                         // 5, when the deposite is still active but the payment to the recipient is yet pending
+        INACTIVE            ,           
+        FINALIZE_PAYMENT    ,           
+        PENDING                         
     }
     
     struct Deposite{
