@@ -36,35 +36,35 @@ contract Escrow{
     // ====== > Moifiers
     
     modifier checkIfDepositorCanDeposite(address depositorAddress){
-        require(disabled_depositor[depositorAddress] == false);
+        require(disabled_depositor[depositorAddress] == false, "There is already an incomplete transaction for this depositor");
         disableDepositorToDeposite(depositorAddress);
         _;
     }
     
     modifier checkIfArbitror(address _requester){
-        require(_requester == arbitror);
+        require(_requester == arbitror, "Sorry, only arbitror has access to this feature");
         _;
     }
     
     modifier withdrawalTimePermmission(address _requester){
         Deposite memory _depositeForThisAddress = deposites[_requester];
-        require(block.timestamp - _depositeForThisAddress.depositeTime >= 1 days); // cheking needs to be done
+        require(block.timestamp - _depositeForThisAddress.depositeTime >= 1 days, "Amount can not be withdrawn within 24 hours of deposite"); // cheking needs to be done
         _;
     }
     
     modifier depositeStatusPermission( address _requester){
         Deposite memory _depositeForThisAddress = deposites[_requester];
-        require(_depositeForThisAddress.confirmation_status == CONFIRMATION_STATUS.PENDING);
+        require(_depositeForThisAddress.confirmation_status == CONFIRMATION_STATUS.PENDING, "Access denied, can not perform action for this deposite");
         _;
     }
     
     modifier checkIfDipositorIsValid(address _requester){
-        require(disabled_depositor[_requester] == true);
+        require(disabled_depositor[_requester] == true, "This account does not have permission to perform this action");
         _;
     }
     
     modifier checkIfPaymentHasBeenConfirmedByDepositor(address _depositor){
-        require(deposites[_depositor].confirmation_status == CONFIRMATION_STATUS.FINALIZE_PAYMENT);
+        require(deposites[_depositor].confirmation_status == CONFIRMATION_STATUS.FINALIZE_PAYMENT, "The depositor has not yet finalized the payment");
         _;
     }
     
