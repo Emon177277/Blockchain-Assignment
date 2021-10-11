@@ -34,7 +34,9 @@ contract Escrow{
     
     event DepositeStatusUpdate(address depositor_address, string deposite_status); // updates on the deposites
     
+    
     // ============================== > Moifiers
+    
     
     // modifier:1 -> this confirms that the dipositor is unable to deposite more than once,
     // they can only deposite when they don't have any pending payment or if they cancel their previous deposite
@@ -44,11 +46,13 @@ contract Escrow{
         _;
     }
     
+    
     // modifier:2 -> this checks if the invoker of the funciton is the arbritror or not
     modifier checkIfArbitror(address _requester){
         require(_requester == arbitror, "Sorry, only arbitror has access to this feature");
         _;
     }
+    
     
     // modifier:3 -> this checks if the depositor is trying to withdraw their deposite within 24 hours or not
     modifier withdrawalTimePermmission(address _requester){
@@ -56,6 +60,7 @@ contract Escrow{
         require(block.timestamp - _depositeForThisAddress.depositeTime >= 1 days, "Amount can not be withdrawn within 24 hours of deposite"); // cheking needs to be done
         _;
     }
+    
     
     // modifier:4 -> this modifier ensures that the arbritror won't be able to send the money to the 
     // recipent until the depositor confirms it
@@ -65,12 +70,14 @@ contract Escrow{
         _;
     }
     
+    
     // modifier:5 -> this checks if the depositor is valid one, this modifier is a bit redundant 
     // but there might come certain situations when this could be useful
     modifier checkIfDipositorIsValid(address _requester){
         require(disabled_depositor[_requester] == true, "This depositor address is not valid for this action");
         _;
     }
+    
     
     // modifier:6 -> checks if the depositor has finalized the payment, after this, 
     // the arbitror can unlock the money for the recipient
@@ -80,8 +87,8 @@ contract Escrow{
     }
     
     
-    
     // ============================== > Functions 
+   
     
     // function:1 ->
     // 1. checks if the depositor has permission to deposite
@@ -100,56 +107,61 @@ contract Escrow{
                                         }
                                     );
         deposites[_depositor] = _deposite;
-        
         emit DepositeStatusUpdate(_deposite.depositor, "Deposite CREATED, Status for this depositor's deposite is : PENDING");
     }
+    
     
     // function:2 ->
     // This function helps the depositor to change the status of the deposite and finalize the payment, so that the arbritror can
     // unlock the deposite and send it to the recipient. After successful execution, this function emits an event so that the
     // arbritror may become aware of the confimation(arbritor needs to listen to the event from outside the network)
     function confirmServiceDelivery() external checkIfDipositorIsValid(msg.sender)  depositeStatusPermission(msg.sender) {
-        
         deposites[msg.sender].confirmation_status = CONFIRMATION_STATUS.FINALIZE_PAYMENT;
-        
         emit DepositeStatusUpdate(msg.sender, "payment for recipient CONFIRMED, Status for this depositor's deposite is : FINALIZE_PAYMENT , please wait for the arbitror to unlock the deposite");
     }
     
+    
+    // function:3 ->
+    // This function can be called by the arbritor after the depositor confrims that the recipient can be payed
     function unlockDeposite(address _depositor) external checkIfArbitror(msg.sender) checkIfDipositorIsValid(_depositor) checkIfPaymentHasBeenConfirmedByDepositor( _depositor) {                 // this can only be called by the arbitror
-        
         Deposite memory _deposite = deposites[_depositor];
         uint amount_to_be_transferred = _deposite.amount;
-        
         _deposite.recipient.transfer(amount_to_be_transferred);
-        
         delete deposites[_depositor];
         delete disabled_depositor[_depositor];
-        
         emit DepositeStatusUpdate(_depositor,  "payment sent to recipient, Status for this depositor's deposite is : INACTIVE");
     }
     
+    
+    // function:4 ->
+    // After 24 hours of deposite the depositor can invoke this fuction to withdraw their deposite if they feel that they
+    // they no longer want to pay the recipent
     function withdrawDeposite() external checkIfDipositorIsValid(msg.sender) withdrawalTimePermmission(msg.sender) depositeStatusPermission(msg.sender){    
-        
         Deposite memory _deposite = deposites[msg.sender];        
         _deposite.depositor.transfer(_deposite.amount);
-        
         delete deposites[msg.sender];
         delete disabled_depositor[msg.sender];
-        
         emit DepositeStatusUpdate(_deposite.depositor, "Deposite WITHDRAWN, Status for this depositor's deposite is : INACTIVE");
     }
     
-    function getDepositStatus(address _depositorAddress) external view checkIfArbitror(msg.sender) checkIfDipositorIsValid(_depositorAddress) returns(Deposite memory){ // this can only be called by the arbitror
-        
-        return deposites[_depositorAddress];
     
-        
+    // function:5 -> 
+    // The arbitror can call this function if they want to see the current state of any deposite
+    function getDepositStatus(address _depositorAddress) external view checkIfArbitror(msg.sender) checkIfDipositorIsValid(_depositorAddress) returns(Deposite memory){ // this can only be called by the arbitror
+        return deposites[_depositorAddress];
     }
     
+    
+    // function:6 ->
+    // This method returns the balance of this contract, anyone can call this function to chek the balance
     function getContractBalance() external view returns(uint){
         return address(this).balance;
     }
     
+    
+    // function:7 ->
+    // This function is used to put the depositor in the disabled list, so that they may not be able to deposite until they're
+    // removed from the list
     function disableDepositorToDeposite(address _depositorAddress) internal{
         disabled_depositor[_depositorAddress] = true;
     }
