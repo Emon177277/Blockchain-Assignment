@@ -1,6 +1,6 @@
 
 const Web3 = require('web3');
-const web3 = new Web3("http://127.0.0.1:9545");
+const web3 = new Web3("http://127.0.0.1:9545"); //this project is done for local network only
 
 const Escrow = require("../Solidity Task/build/contracts/Escrow.json");
 
