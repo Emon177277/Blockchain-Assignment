@@ -252,7 +252,6 @@ contract Escrow{
         function:8 ->
         This function is used to get the deposite information
     */
-    
     function getDepositInfo(address _depositorAddress) external 
                                                          view 
                                                          checkIfDipositorIsValid(_depositorAddress) 
