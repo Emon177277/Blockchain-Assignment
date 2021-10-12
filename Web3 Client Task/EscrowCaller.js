@@ -13,7 +13,7 @@ async function getContract(){
 
 
 /* 
-=============================== SECTION 2 : CONTRACT LESS FUNCTIONS =================================================================
+=============================== SECTION 2 : CONTRACTLESS FUNCTIONS =================================================================
 */
 
 /* 
@@ -97,7 +97,7 @@ async function createAccount(){
 async function createDeposite(  depositorAddress,
                                 depositorPrivateKey, 
                                 recipeintAddress, 
-                                amount,
+                                amount
                                 ){
     let responseFromFunction = {};
     try{
@@ -156,10 +156,12 @@ async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
             data            : contractObj.methods.confirmServiceDelivery().encodeABI()
         }
     
-        let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject)
+        let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject);
+
         responseFromFunction = responseFromTheNetwork;
     }
     catch(err){
+        // console.log(err);
         responseFromFunction = {
             status          : "falure",
             message         : "failed execution from confirmServiceDelivery function",
@@ -172,7 +174,7 @@ async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
     
     return responseFromFunction;
 }
-// confirmServiceDelivery("0x0e931145ec1c813e4db863a9a08c689c80de09e2", "dea3f8f1d80214791197da8acd07b31f3cb453a392e491ac36045d8a67a3f874");
+// confirmServiceDelivery("0x097161c0b69401b6c07a58f9d9e1751824e1e417", "008ad6e463a524c14a59d83d1f208118cad7994abdf85eab3efddd7a71b1b4f7");
 
 /*
     function - > 3.3
@@ -314,7 +316,7 @@ async function getDepositeInfo(depositorAddress){
     }catch(err){
         resonseObject= generateFailedResponseForCallFunctions(err)
     }
-    console.log(resonseObject);
+    // console.log(resonseObject);
     return resonseObject;
    
 }
@@ -341,8 +343,13 @@ async function signAndSendTheTransaction(privateKey, transactionObject){
         let tx = new Tx(transactionObject);
         tx.sign(bufferedPrivateKey);
         let serializedTx = tx.serialize();
+        
         let txHex = "0x" + serializedTx.toString("hex");
+        // console.log("tx porjonto ashche")
+
         reciept = await web3.eth.sendSignedTransaction(txHex);
+
+        // console.log("recept porjonto ashche")
 
         responseFromBlockchainNetwork = {
             status  : "success",
@@ -351,11 +358,15 @@ async function signAndSendTheTransaction(privateKey, transactionObject){
         }
 
     }catch(err){
+
+        // console.log("formation er aage ashche")
         responseFromBlockchainNetwork = {
             status              : "failure",
             message             : Object.values(err.data)[0].reason,
             error_details       : err.data
         }
+
+        // console.log("ekhane ashche")
     }
     return responseFromBlockchainNetwork;
 }
