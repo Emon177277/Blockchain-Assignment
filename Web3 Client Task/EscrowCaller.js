@@ -1,6 +1,7 @@
 const Web3 = require('web3');
 const web3 = new Web3("http://127.0.0.1:9545");
 const contract = require("./Contract");
+var Tx = require("ethereumjs-tx").Transaction;
 
 async function getContract(){
     let escrowContract = await contract();
@@ -52,7 +53,7 @@ async function getNonceForAddress(address){
         resonseObject.detailed_response = err;
     
     }
-    console.log(resonseObject);
+    // console.log(resonseObject);
     return resonseObject;
 }
 // getNonceForAddress("0x7e5f519016277434da984e820b36578d62a3885e");
@@ -253,6 +254,47 @@ async function getDepositeInfo(depositorAddress){
    
 }
 // getDepositeInfo("0x7e5f519016277434da984e820b36578d62a3885e");
+
+
+
+
+async function createDepositeSigned(depositorAddress, depositorPrivateKey, recipeintAddress, amount){
+    try{
+        let contractObj = await getContract();
+        let noneInfo = await getNonceForAddress(depositorAddress)
+        let nonceNo = noneInfo.detailed_response;
+    
+        transactionObject = {
+            nonce:    web3.utils.toHex(nonceNo),
+            gasLimit: web3.utils.toHex(300000),
+            to: contractObj._address,
+            value: web3.utils.toHex(web3.utils.toWei(amount, 'ether')),
+            data: contractObj.methods.depositeCreate(recipeintAddress).encodeABI()
+        }
+    
+        let txHex = await signTheTransaction(depositorPrivateKey, transactionObject)
+    
+        let result =  await web3.eth.sendSignedTransaction(txHex);
+        
+        console.log(result);
+    }
+    catch(err){
+        console.log(err.data)
+    }
+    
+}
+// createDepositeSigned("0x9d557ec322490bdc4f218943b7846d8f4fca4626", "d4816c89f6c66be7999263ef3bab0e461e8eed1b4d6cee0bfcd753d4eb4385db", "0xbd9caec906414d0691fa0ebf1dd51c0c6fdc38af", "2")
+
+async function signTheTransaction(privateKey, transactionObject){
+    let bufferedPrivateKey = Buffer.from(privateKey, "hex");
+    let tx = new Tx(transactionObject);
+    tx.sign(bufferedPrivateKey);
+    let serializedTx = tx.serialize();
+    let txHex = "0x" + serializedTx.toString("hex");
+    return txHex;
+}
+
+
 
 module.exports = {
     getAccountBalance,
