@@ -10,7 +10,7 @@ contract Escrow{
     
     
     /*
-        making the deployer the admin (arbitror) of the contract so that certain features can only be available to them
+        making them admin of the contract so that certain features can only be available to them
     */
     constructor(){
         arbitror = msg.sender;  
@@ -21,10 +21,6 @@ contract Escrow{
    
 // Section2 ============================== > State Variables 
     
-    /*
-        The address of the arbitror, this is going to be set when the contract is deployed, the deployer of the contract
-        is going to be the arbitror
-    */ 
     address arbitror;
     
     /*
@@ -32,13 +28,11 @@ contract Escrow{
     */
     enum CONFIRMATION_STATUS { 
         INACTIVE            ,           // 0, this is the default status 
-        FINALIZE_PAYMENT    ,           // 1, when depositor confirms that recipient can recieve the money
-        PENDING                         // 2, when the deposite is still active but the payment to the recipient is yet pending
+        FINALIZE_PAYMENT    ,           // 2, when depositor confirms that recipient can recieve the money
+        PENDING                         // 5, when the deposite is still active but the payment to the recipient is yet pending
     }
     
-    /*
-        This is the structure of object(in genaral terms) of the deposite 
-    */
+    
     struct Deposite{
         address payable depositor               ;
         address payable recipient               ;
@@ -47,16 +41,19 @@ contract Escrow{
         CONFIRMATION_STATUS confirmation_status ;
     }
     
+    
     /* 
         to have a mapping of all the deposites,deposites are identified by the depositor's address
     */
     mapping (address => Deposite) deposites;                
+    
     
     /* 
         to check if the depositor has any pending deposite, in case 'yes' they will not be able to deposite any 
         further ammount unless they withdraw or their recipient recieves the money
     */
     mapping (address => bool) disabled_depositor;           
+    
     
     /* 
         updates on the deposites 
@@ -66,7 +63,7 @@ contract Escrow{
  
  
     
-// Section3 ============================== > Moifiers(6)
+// Section3 ============================== > Moifiers
     
     /* 
         modifier:1 -> this confirms that the dipositor is unable to deposite more than once,
@@ -78,6 +75,7 @@ contract Escrow{
         _;
     }
     
+    
     /* 
         modifier:2 -> this checks if the invoker of the funciton is the arbritror or not 
     */
@@ -85,6 +83,7 @@ contract Escrow{
         require(_requester == arbitror, "Sorry, only arbitror has access to this feature");
         _;
     }
+    
     
     /*
         modifier:3 -> this checks if the depositor is trying to withdraw their deposite within 24 hours or not 
@@ -94,6 +93,7 @@ contract Escrow{
         require(block.timestamp - _depositeForThisAddress.depositeTime >= 1 days, "Amount can not be withdrawn within 24 hours of deposite"); // cheking needs to be done
         _;
     }
+    
     
     /*
         modifier:4 -> this modifier ensures that the arbritror won't be able to send the money to the 
@@ -105,14 +105,16 @@ contract Escrow{
         _;
     }
     
+    
     /*
         modifier:5 -> this checks if the depositor is valid one, this modifier is a bit redundant 
         but there might come certain situations when this could be useful 
     */
     modifier checkIfDipositorIsValid(address _requester){
-        require(disabled_depositor[_requester] == true, "This depositor address is not valid for this action");
+        require(disabled_depositor[_requester] == true, "This depositor address is not valid for this action, or the depositor does not exit");
         _;
     }
+    
     
     /*
         modifier:6 -> checks if the depositor has finalized the payment, after this, 
@@ -127,7 +129,7 @@ contract Escrow{
 
 
     
-// Section4 ============================== > Functions(7)
+// Section4 ============================== > Functions 
    
    
     /*
@@ -153,7 +155,8 @@ contract Escrow{
         deposites[_depositor] = _deposite;
         emit DepositeStatusUpdate(_deposite.depositor, "Deposite CREATED, Status for this depositor's deposite is : PENDING");
     }
-      
+    
+    
     /*
         function:2 ->
         This function helps the depositor to change the status of the deposite and finalize the payment, so that the arbritror can
@@ -166,6 +169,7 @@ contract Escrow{
         deposites[msg.sender].confirmation_status = CONFIRMATION_STATUS.FINALIZE_PAYMENT;
         emit DepositeStatusUpdate(msg.sender, "payment for recipient CONFIRMED, Status for this depositor's deposite is : FINALIZE_PAYMENT , please wait for the arbitror to unlock the deposite");
     }
+    
     
     /*
         function:3 ->
@@ -183,6 +187,7 @@ contract Escrow{
         emit DepositeStatusUpdate(_depositor,  "payment sent to recipient, Status for this depositor's deposite is : INACTIVE");
     }
     
+    
     /* 
        function:4 ->
        After 24 hours of deposite the depositor can invoke this fuction to withdraw their deposite if they feel that they 
@@ -190,8 +195,8 @@ contract Escrow{
     */
     function withdrawDeposite() external 
                                 checkIfDipositorIsValid(msg.sender) 
-                                withdrawalTimePermmission(msg.sender) 
-                                depositeStatusPermission(msg.sender){    
+                                depositeStatusPermission(msg.sender)
+                                withdrawalTimePermmission(msg.sender) {    
         Deposite memory _deposite = deposites[msg.sender];        
         _deposite.depositor.transfer(_deposite.amount);
         delete deposites[msg.sender];
@@ -199,16 +204,29 @@ contract Escrow{
         emit DepositeStatusUpdate(_deposite.depositor, "Deposite WITHDRAWN, Status for this depositor's deposite is : INACTIVE");
     }
     
+    
     /* 
         function:5 -> 
-        The arbitror can call this function if they want to see the current state of any deposite 
+        The arbitror can call this function if they want to see the current status of any deposite 
     */
     function getDepositStatus(address _depositorAddress) external 
                                                          view 
                                                          checkIfDipositorIsValid(_depositorAddress) 
-                                                         returns(Deposite memory){ 
-        return deposites[_depositorAddress];
+                                                         returns(string memory){ 
+        Deposite memory deposite = deposites[_depositorAddress];
+        string memory status;
+        if(deposite.confirmation_status == CONFIRMATION_STATUS.INACTIVE){
+            status = "inactive";
+        }
+        if(deposite.confirmation_status == CONFIRMATION_STATUS.FINALIZE_PAYMENT){
+            status = "payment finalized, waiting for the arbritor to unlock";
+        }
+        if(deposite.confirmation_status == CONFIRMATION_STATUS.PENDING){
+            status = "pending confirmation by the depositor";
+        }
+        return status;
     }
+    
     
     /* 
         function:6 ->
@@ -220,6 +238,7 @@ contract Escrow{
         return address(this).balance;
     }
     
+    
     /*
         function:7 ->
         This function is used to put the depositor in the disabled list, so that they may not be able to deposite until they're
@@ -229,7 +248,17 @@ contract Escrow{
         disabled_depositor[_depositorAddress] = true;
     }
     
-
-
+    /*
+        function:8 ->
+        This function is used to get the deposite information
+    */
+    
+    function getDepositInfo(address _depositorAddress) external 
+                                                         view 
+                                                         checkIfDipositorIsValid(_depositorAddress) 
+                                                         returns(Deposite memory){ 
+        return deposites[_depositorAddress];
+    }
+    
 
 }
