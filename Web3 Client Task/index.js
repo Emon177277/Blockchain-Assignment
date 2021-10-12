@@ -2,9 +2,13 @@ const escrowCaller = require('./EscrowCaller');
 const express = require('express');
 const bodyParser = require("body-parser");
 const cors = require("cors");
-
+const path = require("path");
 
 const app = express();
+
+// app.use(express.static('public'));
+
+
 
 
 // async function callEscrow(){
@@ -19,25 +23,20 @@ const app = express();
 // callEscrow();
 
 
-// app.post('/signup', async(req, res, next) => {
-//     try {
-//       await firstThing()
-//     } catch (error) {
-//       return next(error)
-//     }
-  
-//     try {
-//       await secondThing()
-//     } catch (error) {
-//       return next(error)
-//     }
-//   })
-
-app.get('/', async (req, res)=>{
-    res.status(200).send("it works");
+app.get('/',(req, res)=>{
+    res.sendFile(path.join(__dirname, './public/index.html'));
+    console.log(__dirname);
 });
 
-const port = 8083;
+app.get('/static/arbitror',(req, res)=>{
+    res.sendFile(path.join(__dirname, './public/static/arbitror.html'));
+});
+
+app.get('/static/depositor',(req, res)=>{
+    res.sendFile(path.join(__dirname, './public/static/depositor.html'));
+});
+
+const port = 8085;
 app.listen(port,()=>{
     console.log("server started successfully at port " + port);
 });

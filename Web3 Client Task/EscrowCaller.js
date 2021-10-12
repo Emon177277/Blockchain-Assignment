@@ -391,6 +391,7 @@ function generateFailedResponseForCallFunctions(err){
 
 
 module.exports = {
+    createAccount,
     getAccountBalance,
     getNonceForAddress,
     createDeposite,
