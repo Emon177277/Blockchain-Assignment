@@ -205,7 +205,6 @@ contract Escrow{
     */
     function getDepositStatus(address _depositorAddress) external 
                                                          view 
-                                                         checkIfArbitror(msg.sender) 
                                                          checkIfDipositorIsValid(_depositorAddress) 
                                                          returns(Deposite memory){ 
         return deposites[_depositorAddress];
