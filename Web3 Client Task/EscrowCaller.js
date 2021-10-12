@@ -1,3 +1,6 @@
+/* 
+=============================== SECTION 1 : IMPORTING THE NECESSARY LIBRARIES =================================================================
+*/
 const Web3 = require('web3');
 const web3 = new Web3("http://127.0.0.1:9545");
 const contract = require("./Contract");
@@ -6,46 +9,46 @@ var Tx = require("ethereumjs-tx").Transaction;
 async function getContract(){
     let escrowContract = await contract();
     return escrowContract;
-} 
+}
 
+
+/* 
+=============================== SECTION 2 : CONTRACT LESS FUNCTIONS =================================================================
+*/
+
+/* 
+    function -> 2.1
+    calling this function gets the balance of specified account
+*/
 async function getAccountBalance(accountAddress){
-    let resonseObject ={
-        
-    }
-    
+    let resonseObject={}; 
     try{
         let balance = await web3.eth.getBalance(accountAddress);
         resonseObject.response_status   = "success";
         resonseObject.message           = "the balance was successfully retrieved"
-        resonseObject.detailed_response = balance;
+        resonseObject.data              = balance;
     }
     catch(err){
         resonseObject.response_status   = "failure";
         resonseObject.message           = err.data
         resonseObject.detailed_response = err
     }
-    
-    console.log(resonseObject);
-
+    // console.log(resonseObject);
     return resonseObject;
 }
 // getAccountBalance("0x7e5f519016277434da984e820b36578d62a3885e");
 
+/* 
+    function - 2.2
+    calling this function gets the nonce(number of transactions) for specified account, nonce is important for signing transactions
+*/
 async function getNonceForAddress(address){
-    
-    let resonseObject ={
-       
-    }
+    let resonseObject={};
     try{
-        
         let nonce = await web3.eth.getTransactionCount(address);
-        
         resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = nonce
-
-        // console.log(nonce);
-    
+        resonseObject.message           = "";
+        resonseObject.data              = nonce;
     }catch(err){
         
         resonseObject.response_status   = "failure";
@@ -58,242 +61,333 @@ async function getNonceForAddress(address){
 }
 // getNonceForAddress("0x7e5f519016277434da984e820b36578d62a3885e");
 
-async function createDeposite(  depositorAddress, 
+/*
+    function - 2.3
+    calling this function creates new account and retuns address and privateKey
+*/
+async function createAccount(){
+    let responseObject = {};
+    try{
+        let addressDetails = await web3.eth.accounts.create();
+        responseObject.status   = "success";
+        responseObject.message  = "successfully created account";
+        responseObject.data     = addressDetails;
+    }catch(err){
+        responseObject.status           = "failure";
+        responseObject.message          = "error occures while creating account"
+        responseObject.error_details    = err
+    }
+    // console.log(responseObject);
+    return responseObject;
+}
+// createAccount();
+
+
+/* 
+=============================== SECTION 3 : CONTRACT FUNCTIONS(TRANSACTION TYPE) =================================================================
+*/
+
+/* 
+    function - > 3.1
+    this function is called by the depositor to deposite money in the smart contract, so that
+    it can later be sentto the recipent after the depositor confirms the transaction later, after
+    confirmation the arbitror will unlock the deposite and the recipent will recieve the amount specified 
+    here in this function. this is a signed transaction, so private key is needed for this function
+*/
+async function createDeposite(  depositorAddress,
+                                depositorPrivateKey, 
                                 recipeintAddress, 
                                 amount,
                                 ){
-    let resonseObject ={
-        
-    }
+    let responseFromFunction = {};
     try{
         let contractObj = await getContract();
-        let reciept = await contractObj.methods.depositeCreate(recipeintAddress).send({ 
-                            from: depositorAddress,
-                            value: amount,
-                            gasLimit: "300000"
-                        });
-        resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = reciept;
-        
+        let noneInfo    = await getNonceForAddress(depositorAddress);
+        let nonceNo     = noneInfo.data;
+    
+        transactionObject = {
+            nonce           :    web3.utils.toHex(nonceNo),
+            gasLimit        : web3.utils.toHex(300000),
+            to              : contractObj._address,
+            value           : web3.utils.toHex(web3.utils.toWei(amount, 'ether')),
+            data            : contractObj.methods.depositeCreate(recipeintAddress).encodeABI()
+        }
+    
+        let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject)
+        responseFromFunction = responseFromTheNetwork;
     }
     catch(err){
-
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data;
+        responseFromFunction = {
+            status          : "falure",
+            message         : "failed execution from createDeposite() function",
+            error_details   : err
+        }
         
     }
-    console.log(resonseObject);
-    return resonseObject;
+    
+    // console.log(responseFromFunction);
+    
+    return responseFromFunction;
 }
-// createDeposite("0xee46cbafdd18a8d8e43894fcb29bca48589f004b","0xbd9caec906414d0691fa0ebf1dd51c0c6fdc38af","2000000000000000000")
+// createDeposite("0x0e931145ec1c813e4db863a9a08c689c80de09e2","dea3f8f1d80214791197da8acd07b31f3cb453a392e491ac36045d8a67a3f874" ,"0xbd9caec906414d0691fa0ebf1dd51c0c6fdc38af","2")
 
-async function confirmServiceDelivery(depositorAddress){
+/*
+    function - > 3.2
+    this function is called by the depositor to confirm the payment to the recipent, after this function the arbitror can
+    unlock the deposite and the recipent will recieve the money. this is a signed transaction, so private key is needed for 
+    this function.
+
+    **************** special node ***************  
+    also I wanted to use event listener after this function is called (an event is being emmited from the contract). but due
+    to time contrans I could not do so. event listener would've helped the arbitror to trac the confirmed payments.
+*/
+async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
     
-    let resonseObject ={
-        
-    }
-    
+    let responseFromFunction = {};
     try{
         let contractObj = await getContract();
-        let reciept = await contractObj.methods.confirmServiceDelivery().send({
-                            from : depositorAddress,
-                            gasLimit: "300000"
-                        });  
-        
-        resonseObject.response_status   = "success";
-        resonseObject.message           = "";
-        resonseObject.detailed_response = reciept;
-
-    }catch(err){
-        
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data
+        let noneInfo    = await getNonceForAddress(depositorAddress);
+        let nonceNo     = noneInfo.data;
     
+        transactionObject = {
+            nonce           : web3.utils.toHex(nonceNo),
+            gasLimit        : web3.utils.toHex(300000),
+            to              : contractObj._address,
+            data            : contractObj.methods.confirmServiceDelivery().encodeABI()
+        }
+    
+        let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject)
+        responseFromFunction = responseFromTheNetwork;
     }
-
-    console.log(resonseObject)
-    return resonseObject;
+    catch(err){
+        responseFromFunction = {
+            status          : "falure",
+            message         : "failed execution from confirmServiceDelivery function",
+            error_details   : err
+        }
+        
+    }
+    
+    // console.log(responseFromFunction);
+    
+    return responseFromFunction;
 }
-// confirmServiceDelivery("0xee46cbafdd18a8d8e43894fcb29bca48589f004b");
+// confirmServiceDelivery("0x0e931145ec1c813e4db863a9a08c689c80de09e2", "dea3f8f1d80214791197da8acd07b31f3cb453a392e491ac36045d8a67a3f874");
 
-async function unlockDeposite(arbitrorAddress, depositorAddress){
+/*
+    function - > 3.3
+    this function is called by the arbitror after the depositor confirms the payment. 
+    this is also a signed transactionand it requires the arbitror's privateKey.
+*/
+async function unlockDeposite(arbitrorAddress, depositorAddress, arbitrorPrivateKey){
     
-    let resonseObject ={
-        
-    }
-    
+    let responseFromFunction = {};
     try{
         let contractObj = await getContract();
-        let reciept = await contractObj.methods.unlockDeposite(depositorAddress).send({
-                            from : arbitrorAddress,
-                            gasLimit: "300000"
-                        })
-
-        resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = reciept;
-
-    }catch(err){
-        
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data
+        let noneInfo    = await getNonceForAddress(arbitrorAddress);
+        let nonceNo     = noneInfo.data;
     
+        transactionObject = {
+            nonce           : web3.utils.toHex(nonceNo),
+            gasLimit        : web3.utils.toHex(300000),
+            to              : contractObj._address,
+            data            : contractObj.methods.unlockDeposite(depositorAddress).encodeABI()
+        }
+    
+        let responseFromTheNetwork = await signAndSendTheTransaction(arbitrorPrivateKey, transactionObject)
+        responseFromFunction = responseFromTheNetwork;
     }
-    console.log(resonseObject);
-    return resonseObject;
+    catch(err){
+        responseFromFunction = {
+            status          : "falure",
+            message         : "failed execution from unlockDeposite function",
+            error_details   : err
+        }
+        
+    }
+    
+    // console.log(responseFromFunction);
+    
+    return responseFromFunction;
 }
-// unlockDeposite("0xf6a9bce0c5cab5f1b079089a13d230a7ba99e154","0xee46cbafdd18a8d8e43894fcb29bca48589f004b");
+// unlockDeposite("0xf6a9bce0c5cab5f1b079089a13d230a7ba99e154","0x0e931145ec1c813e4db863a9a08c689c80de09e2", "9a5425ad4f477c7474a50a24fe7004eed10b4a6a00362f460f6bbf50e65a274b");
 
-async function withdrawDeposite(depositorAddress){
+/*
+    function - > 3.4
+    this function is called by the depositor to withdraw their deposite ammount, 
+    calling this function withing 24 hours of deposite will throw an error because 
+    they are no allowed to withdraw the money withing 24 hours of deposite
+
+    this functions is also a transaction type and needs the callers private key
+*/
+async function withdrawDeposite(depositorAddress, depositorPrivateKey){
     
-    let resonseObject ={
-        
-    }
-
+    let responseFromFunction = {};
     try{
         let contractObj = await getContract();
-        let reciept = await contractObj.methods.withdrawDeposite().send({
-                            from: depositorAddress,
-                            gasLimit: "300000"
-                        })
-        
-
-        resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = reciept;
-
-    }catch(err){
-        
-  
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data
+        let noneInfo    = await getNonceForAddress(depositorAddress);
+        let nonceNo     = noneInfo.data;
     
+        transactionObject = {
+            nonce           : web3.utils.toHex(nonceNo),
+            gasLimit        : web3.utils.toHex(300000),
+            to              : contractObj._address,
+            data            : contractObj.methods.withdrawDeposite().encodeABI()
+        }
+    
+        let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject)
+        responseFromFunction = responseFromTheNetwork;
     }
-    console.log(resonseObject)
-    return resonseObject;
+    catch(err){
+        responseFromFunction = {
+            status          : "falure",
+            message         : "failed execution from withdrawDeposite() function",
+            error_details   : err
+        }
+        
+    }
+    
+    // console.log(responseFromFunction);
+    
+    return responseFromFunction;
 }
-// withdrawDeposite("0xbd9caec906414d0691fa0ebf1dd51c0c6fdc38af");
+// withdrawDeposite("0x0e931145ec1c813e4db863a9a08c689c80de09e2", "9a5425ad4f477c7474a50a24fe7004eed10b4a6a00362f460f6bbf50e65a274b");
 
+
+/* 
+=============================== SECTION 4 : CONTRACT FUNCTIONS(VIEW TYPE) =================================================================
+*/
+
+/*
+    function - > 4.1
+    this functions takes the depositor address as an argument, as the 
+    same address is also the deposite uniq id in the smartcontract
+    then it returns the status of that deposite status ( string value ) 
+*/
 async function getDepositStatus(depositorAddress){
-    
-    let resonseObject ={
-        
-    }
-
+    let resonseObject={};
     try{
         let contractObj = await getContract();
         let reciept = await contractObj.methods.getDepositStatus(depositorAddress).call();
-        
-        resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = reciept;
-
+        resonseObject = generateSuccessResponseForCallFunctions(reciept)
     }catch(err){
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data
+        resonseObject= generateFailedResponseForCallFunctions(err)
     }
-    console.log(resonseObject);
+    // console.log(resonseObject);
     return resonseObject;
 }
-// getDepositStatus("0xee46cbafdd18a8d8e43894fcb29bca48589f004b");
+// getDepositStatus("0x0e931145ec1c813e4db863a9a08c689c80de09e2");
 
+/*
+    function - > 4.2
+    this is a view function that returns the balance of the contract, anyone can call this function
+    I've made this function available for everyone because they can check the balance of this contract anyway
+    if they look it up in the etherscan.io
+*/
 async function getContractBalance(){
-    
-    let resonseObject ={
-        
-    }
-    
+    let resonseObject={};
     try{
         let contractObj = await getContract();
         let reciept = await contractObj.methods.getContractBalance().call();
-
-        resonseObject.response_status   = "success";
-        resonseObject.message           = ""
-        resonseObject.detailed_response = reciept;
+        resonseObject = generateSuccessResponseForCallFunctions(reciept)
     }catch(err){
-        
-
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err
-    
+        resonseObject= generateFailedResponseForCallFunctions(err)
     }
-    console.log(resonseObject)
+    // console.log(resonseObject);
     return resonseObject;
 }
 // getContractBalance();
 
+/*
+    function - > 4.3
+    this is a view function that returns the detailed information of a deposite, it also takes in the 
+    depositors address as an input, because that address is used as a uniqe identifier for the deposite
+*/
 async function getDepositeInfo(depositorAddress){
-  
-    let resonseObject ={
-        
-    }
+      
+    let resonseObject={};
 
     try{
         let contractObj = await getContract();
         let reciept = await contractObj.methods.getDepositInfo(depositorAddress).call();
-        
-        resonseObject.response_status   = "success";
-        resonseObject.message           = "successfully retrived depositeInfo"
-        resonseObject.detailed_response = reciept;
-
+        resonseObject = generateSuccessResponseForCallFunctions(reciept)
     }catch(err){
-        
-        resonseObject.response_status   = "failure";
-        resonseObject.message           = Object.values(err.data)[0].reason
-        resonseObject.detailed_response = err.data
+        resonseObject= generateFailedResponseForCallFunctions(err)
     }
     console.log(resonseObject);
     return resonseObject;
    
 }
-// getDepositeInfo("0x7e5f519016277434da984e820b36578d62a3885e");
+// getDepositeInfo("0x0e931145ec1c813e4db863a9a08c689c80de09e2");
 
 
 
 
-async function createDepositeSigned(depositorAddress, depositorPrivateKey, recipeintAddress, amount){
+/* 
+=============================== SECTION 5 : HELPER FUNCTIONS =================================================================
+*/
+
+/* 
+    function - > 5.1
+    this functions is used to send signed transactions with private key for locked accounts, this is not necessary for 
+    local accouts like the one in this project but in a public test net, transactions must be signed so I've added this
+*/
+async function signAndSendTheTransaction(privateKey, transactionObject){
+    
+    let responseFromBlockchainNetwork = {};
+
     try{
-        let contractObj = await getContract();
-        let noneInfo = await getNonceForAddress(depositorAddress)
-        let nonceNo = noneInfo.detailed_response;
-    
-        transactionObject = {
-            nonce:    web3.utils.toHex(nonceNo),
-            gasLimit: web3.utils.toHex(300000),
-            to: contractObj._address,
-            value: web3.utils.toHex(web3.utils.toWei(amount, 'ether')),
-            data: contractObj.methods.depositeCreate(recipeintAddress).encodeABI()
+        let bufferedPrivateKey = Buffer.from(privateKey, "hex");
+        let tx = new Tx(transactionObject);
+        tx.sign(bufferedPrivateKey);
+        let serializedTx = tx.serialize();
+        let txHex = "0x" + serializedTx.toString("hex");
+        reciept = await web3.eth.sendSignedTransaction(txHex);
+
+        responseFromBlockchainNetwork = {
+            status  : "success",
+            message : "the request was successfull",
+            data    : reciept 
         }
-    
-        let txHex = await signTheTransaction(depositorPrivateKey, transactionObject)
-    
-        let result =  await web3.eth.sendSignedTransaction(txHex);
-        
-        console.log(result);
-    }
-    catch(err){
-        console.log(err.data)
-    }
-    
-}
-// createDepositeSigned("0x9d557ec322490bdc4f218943b7846d8f4fca4626", "d4816c89f6c66be7999263ef3bab0e461e8eed1b4d6cee0bfcd753d4eb4385db", "0xbd9caec906414d0691fa0ebf1dd51c0c6fdc38af", "2")
 
-async function signTheTransaction(privateKey, transactionObject){
-    let bufferedPrivateKey = Buffer.from(privateKey, "hex");
-    let tx = new Tx(transactionObject);
-    tx.sign(bufferedPrivateKey);
-    let serializedTx = tx.serialize();
-    let txHex = "0x" + serializedTx.toString("hex");
-    return txHex;
+    }catch(err){
+        responseFromBlockchainNetwork = {
+            status              : "failure",
+            message             : Object.values(err.data)[0].reason,
+            error_details       : err.data
+        }
+    }
+    return responseFromBlockchainNetwork;
 }
 
+/* 
+    function - > 5.2
+    this helps genarates a success response for the 'view' type functions
+*/
+function generateSuccessResponseForCallFunctions(reciept){
+    let resonseObject={};
+    resonseObject.response_status   = "success";
+    resonseObject.message           = "successfully retrived depositeInfo"
+    resonseObject.detailed_response = reciept;
+    return resonseObject;
+}
+
+/* 
+    function -> 5.3
+    this helps genarate a failure response for the 'vew' type functions
+*/
+function generateFailedResponseForCallFunctions(err){
+    let resonseObject={};
+    resonseObject.response_status   = "failure";
+    resonseObject.message           = Object.values(err.data)[0].reason
+    resonseObject.detailed_response = err.data
+    return resonseObject;
+}
+
+
+/* 
+=============================== SECTION 6 : EXPORT THE FUNCTIONS TO BE USED FROM OUTSIDE THIS FILE =============================
+*/
 
 
 module.exports = {
