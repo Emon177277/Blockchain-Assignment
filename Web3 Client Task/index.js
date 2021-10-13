@@ -205,6 +205,10 @@ app.post("/deposite/info",async(req, res)=>{
     res.send(apiResponse);
 });
 
+app.get("/deposite/pending-unlock", async(req, res)=>{
+    let listOfLockedPendingDeposites = await escrowCaller.getPendingToBeUnlockedDeposites();
+    res.send(listOfLockedPendingDeposites);
+})
 
 // ======================================== section 3 : helper section =======================================
 

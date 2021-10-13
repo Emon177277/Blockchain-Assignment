@@ -4,7 +4,15 @@
 const Web3 = require('web3');
 const web3 = new Web3("http://127.0.0.1:9545");
 const contract = require("./Contract");
-var Tx = require("ethereumjs-tx").Transaction;
+const Tx = require("ethereumjs-tx").Transaction;
+
+const pending_unlocked_deposites = new Set();
+
+function getPendingToBeUnlockedDeposites(){
+    const myArr = Array.from(pending_unlocked_deposites);
+    return myArr;
+}
+
 
 async function getContract(){
     let escrowContract = await contract();
@@ -141,7 +149,7 @@ async function createDeposite(  depositorAddress,
 
     **************** special node ***************  
     also I wanted to use event listener after this function is called (an event is being emmited from the contract). but due
-    to time contrans I could not do so. event listener would've helped the arbitror to trac the confirmed payments.
+    to time contraints I could not do so. event listener would've helped the arbitror to trac the confirmed payments.
 */
 async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
     
@@ -161,6 +169,12 @@ async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
         let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject);
 
         responseFromFunction = responseFromTheNetwork;
+
+        if(responseFromFunction.status != "failure"){
+            //I am storing these deposites in a set so that the arbitror can see the list of addresses that needs to be unlocked
+            pending_unlocked_deposites.add(depositorAddress);
+        }
+        
     }
     catch(err){
         // console.log(err);
@@ -171,12 +185,11 @@ async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
         }
         
     }
-    
+    // console.log(pending_unlocked_deposites);
     // console.log(responseFromFunction);
-    
     return responseFromFunction;
 }
-// confirmServiceDelivery("0x097161c0b69401b6c07a58f9d9e1751824e1e417", "008ad6e463a524c14a59d83d1f208118cad7994abdf85eab3efddd7a71b1b4f7");
+// confirmServiceDelivery("0x0e931145ec1c813e4db863a9a08c689c80de09e2", "dea3f8f1d80214791197da8acd07b31f3cb453a392e491ac36045d8a67a3f874");
 
 /*
     function - > 3.3
@@ -200,6 +213,12 @@ async function unlockDeposite(arbitrorAddress, depositorAddress, arbitrorPrivate
     
         let responseFromTheNetwork = await signAndSendTheTransaction(arbitrorPrivateKey, transactionObject)
         responseFromFunction = responseFromTheNetwork;
+
+        // deleting the addresses after arbitror unlocks them successfully, this should have been done with event listener,
+        // but I was not able to implement it within this time.
+        if(responseFromFunction.status == "success" ){
+            pending_unlocked_deposites.delete(depositorAddress);
+        }
     }
     catch(err){
         responseFromFunction = {
@@ -210,7 +229,7 @@ async function unlockDeposite(arbitrorAddress, depositorAddress, arbitrorPrivate
         
     }
     
-    // console.log(responseFromFunction);
+    console.log(responseFromFunction);
     
     return responseFromFunction;
 }
@@ -413,5 +432,6 @@ module.exports = {
     withdrawDeposite, 
     getDepositStatus, 
     getContractBalance, 
-    getDepositeInfo
+    getDepositeInfo,
+    getPendingToBeUnlockedDeposites
 }
