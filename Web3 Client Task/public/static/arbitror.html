@@ -46,6 +46,13 @@
       <p id="monitor" style="background-color: cadetblue; width: fit-content;"></p>
     </diV>
 
+    <div class="jumbotron">
+      <h3>List of Approved Deposites</h3>
+      <ul id="pendingList">
+
+      </ul>
+    </div>
+
   </div>
 
   
@@ -53,37 +60,21 @@
   <script>
       $(function(){
 
-        // $('#deposite').on("click", function(){
-        //     let deposite = {
 
-        //             depositorAddress		    : $("#depositorOwnAddress").val(), 
-        //             depositorPrivateKey	    : $("#depositorOwnPrivateKey").val(), 
-        //             recipeintAddress 		    : $("#recipentAddress").val(), 
-        //             amount				          : $("#amount").val()
-        //       }
-            
-        //       if( !deposite.depositorAddress || !deposite.depositorPrivateKey || !deposite.recipeintAddress || !deposite.amount){
-        //         alert("depositor Address, depositor private key, recipient address and amount field can not be null");
-        //         return;
-        //       }
-
-            
-
-        //       $.ajax({
-        //         type: "POST",
-        //         url:"/deposite/creation",
-        //         data: deposite,
-        //         success: function(value){
-        //                     $("#depositeOwnStatusResultIn").text(value.message);
-        //                     console.log(value);
-        //                   },
-        //         error:    function(err){
-        //                     $("#depositeOwnStatusResultIn").text(err.message);
-        //                     console.log(err);
-        //                   }
-        //       })
-
-        // })
+        $.ajax({
+                type: "GET",
+                url:"/deposite/pending-unlock",
+                success: function(value){
+                            value.forEach(element => {
+                              $("#pendingList").append("<li>"+element+"</li>");
+                            });
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+        
 
         $('#unlockDeposite').on("click", function(){
             let reqBody = {              
