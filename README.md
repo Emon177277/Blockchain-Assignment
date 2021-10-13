@@ -69,7 +69,7 @@ node index.js
 
 - this will start the server and the api will be available which you can use to communicate with the web3 client. its running in [localhost:8085]().
 
-- I've provided a __'web3.json'__ file which you can import in post man to communicate with the api  
+- I've provided a [__web3.json__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/web3.json) file which you can import in postman to communicate with the api. all the endpoints and request bodies are described there.  
 
 ___Step 3 : Use the Dapp as a regular depositor user___
 - go to [localhost:8085](http://localhost:8085/) and click on the [Go to Depositor Section](http://localhost:8085/static/depositor). 
