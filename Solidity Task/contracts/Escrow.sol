@@ -58,7 +58,7 @@ contract Escrow{
     /* 
         updates on the deposites 
     */
-    event DepositeStatusUpdate(address depositor_address, string deposite_status); 
+    event DepositeStatusUpdate(address indexed depositor_address, string indexed deposite_status); 
     
  
  
