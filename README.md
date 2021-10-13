@@ -16,8 +16,10 @@ ___Step 3 : compiling the Smart Contract___
 ~~~
 truffle compile
 ~~~
-- above line will compile both of the smart contracts in the contracts folder.  
+- above line will compile both of the smart contracts in the contracts folder. 
 (running truffle init provided one default contract which I didn't delete)
+
+- The name of my smart contract for this project is __'Escrow.sol'__.
 
 ___Step 4 : Run the Network___
 - from the __'Solidity Task'__ folder run the command below in the terminal/cmd.
@@ -69,7 +71,12 @@ node index.js
 
 - I've provided a __'web3.json'__ file which you can import in post man to communicate with the api 
 
-__I'm still woking on the frontend part of the project, once I get done with that, You no longer need to use post man to use the api.  
-But till then, I'll provide the details in the section below.__
+### ___*note___ : For the solidity descriptions checkout the  __'Escrow.sol'__ file. I've provided detailed description on how each function works in this file.
+
+### ___*note___ : For the contract interacction part please take a look at the __'EscrowCaller.js'__ file. I've also written detailed description of how each function is working here.
+
+##### note: I'm still woking on the frontend part of the project, once I get done with that, You no longer need to use post man to use the api.  But till then, I'll provide the details in the section below.
+
+
 
 
