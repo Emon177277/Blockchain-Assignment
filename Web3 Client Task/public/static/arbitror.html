@@ -12,7 +12,7 @@
   integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
   crossorigin="anonymous">
 </script>
-<script src="apicallerarbitror.js"></script>
+
 </head>
 <body>
 
@@ -36,14 +36,14 @@
         <label>Depositor Address(which is also the deposite id)</label>
         <input type="text" id="depositorAddress" placeholder="Depositor Address" >
         <input type="button" id="getDepositeStatus" value="Get Deposite Status">
-        <input type="button" id="getDepositeFullInfo" value="Get Deposite Full Info">
+        <input type="button" id="getContractBalance" value="Get Contract Balance">
         <input type="button" id="unlockDeposite" value="Unlock This Deposite"><br>
-      
+
     </div>
 
     <diV class="jumbotron">
       <h3>Results: </h3><br>
-      <p id="depositeStatusResult" style="background-color: cadetblue; width: fit-content;"></p>
+      <p id="monitor" style="background-color: cadetblue; width: fit-content;"></p>
     </diV>
 
   </div>
@@ -53,6 +53,113 @@
   <script>
       $(function(){
 
+        // $('#deposite').on("click", function(){
+        //     let deposite = {
+
+        //             depositorAddress		    : $("#depositorOwnAddress").val(), 
+        //             depositorPrivateKey	    : $("#depositorOwnPrivateKey").val(), 
+        //             recipeintAddress 		    : $("#recipentAddress").val(), 
+        //             amount				          : $("#amount").val()
+        //       }
+            
+        //       if( !deposite.depositorAddress || !deposite.depositorPrivateKey || !deposite.recipeintAddress || !deposite.amount){
+        //         alert("depositor Address, depositor private key, recipient address and amount field can not be null");
+        //         return;
+        //       }
+
+            
+
+        //       $.ajax({
+        //         type: "POST",
+        //         url:"/deposite/creation",
+        //         data: deposite,
+        //         success: function(value){
+        //                     $("#depositeOwnStatusResultIn").text(value.message);
+        //                     console.log(value);
+        //                   },
+        //         error:    function(err){
+        //                     $("#depositeOwnStatusResultIn").text(err.message);
+        //                     console.log(err);
+        //                   }
+        //       })
+
+        // })
+
+        $('#unlockDeposite').on("click", function(){
+            let reqBody = {              
+                    depositorAddress		: $("#depositorAddress").val(), 
+                    arbitrorPrivateKey	: $("#arbitrorPrivateKey").val(),
+                    arbitrorAddress		  : $("#arbitrorAddress").val()
+              }
+            
+              if( !reqBody.depositorAddress || !reqBody.arbitrorPrivateKey || !reqBody.arbitrorAddress){
+                alert("depositor address, arbitror privateKey and arbitror address must not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/unlock",
+                data: reqBody,
+                success: function(value){
+                            $("#monitor").text(value.message);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+
+        });
+
+        $('#getContractBalance').on("click", function(){
+
+              $.ajax({
+                type: "POST",
+                url:"/contract/balance",
+                success: function(value){
+                            $("#monitor").text(value + " wei ");
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err);
+                            console.log(err);
+                          }
+              })
+
+        });
+
+
+        $('#getDepositeStatus').on("click", function(){
+            let reqBody = {              
+                            depositorAddress		: $("#depositorAddress").val(), 
+                          }
+              
+              if( !reqBody.depositorAddress){
+                alert("depositor addresscan not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/status",
+                data: reqBody,
+                success: function(value){
+                            $("#monitor").text(value.detailed_response);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#monitor").text(err.message);
+                            console.log(err);
+                          }
+              })
+
+        });
 
 
       })

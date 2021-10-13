@@ -293,9 +293,9 @@ async function getContractBalance(){
     try{
         let contractObj = await getContract();
         let reciept = await contractObj.methods.getContractBalance().call();
-        resonseObject = generateSuccessResponseForCallFunctions(reciept)
+        resonseObject = reciept;
     }catch(err){
-        resonseObject= generateFailedResponseForCallFunctions(err)
+        resonseObject= err;
     }
     // console.log(resonseObject);
     return resonseObject;
