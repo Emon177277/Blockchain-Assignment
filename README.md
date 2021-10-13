@@ -55,7 +55,7 @@ npm install
 - above command will install all the necessary dependencies for the project.
 
 ___Step 2 : Runing the web3 server client.___
-- although I've installed nodemon but for some reason. Its not working. if you wish you can run the project with the following command which uses nodemon. but don't expect that it will reset the server automatically in case of error, because nodemon does run the program but it isn't restarting in case of error __(which is not suppose to be the case)__.
+- although I've installed nodemon but for some reason. Its not working. if you wish you can run the project with the following command which uses nodemon. but don't expect that it will reset the server automatically in case of error, because nodemon does run the program but it isn't restarting in case of error.
 
 ~~~
 npm start
