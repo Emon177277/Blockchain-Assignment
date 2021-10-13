@@ -52,7 +52,7 @@ app.post("/account/balance",async(req, res)=>{
         let requestBody     = req.body;
         let accountAddress  = requestBody.address;
         let web3Response = await escrowCaller.getAccountBalance(accountAddress);
-        apiResponse = web3Response
+        apiResponse = web3Response;
     }
     catch(err){
         apiResponse = err

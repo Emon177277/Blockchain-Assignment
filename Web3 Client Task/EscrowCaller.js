@@ -26,7 +26,7 @@ async function getAccountBalance(accountAddress){
         let balance = await web3.eth.getBalance(accountAddress);
         resonseObject.response_status   = "success";
         resonseObject.message           = "the balance was successfully retrieved"
-        resonseObject.data              = balance;
+        resonseObject.balance              = balance;
     }
     catch(err){
         resonseObject.response_status   = "failure";
