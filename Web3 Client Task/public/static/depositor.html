@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sample Site</title>
+  <title>Depositor Page</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <style>
     body { padding-top: 50px; }
@@ -12,17 +12,98 @@
   integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
   crossorigin="anonymous">
 </script>
+<!-- <script src="apicallerdepositor.js">
+
+
+
+</script> -->
 </head>
 <body>
 
   <div class="container">
     <div class="jumbotron">
-      <h1>depositor page</h1>
+      <h1>Depositor page</h1>
+      <a href="arbitror">Go To Arbitror Page</a>
     </div>
+
+    <div class="jumbotron" style="padding: 5px;">
+      <h2>Set Depositor Credentials Here or Create Account</h2><br>
+      <label>Depositor Account Address</label>
+      <input type="text" id="depositorOwnAddress" placeholder="Depositor Address">
+      <label>Depositor Account PrivateKey</label>
+      <input type="text" id="depositorOwnPrivateKey" placeholder="Depositor Private Key"> or 
+      <input type="button" id="createAccount" value="Create An Account"> and them set them here later
+    </div>
+
+    <div class="jumbotron" style="padding: 20px;">
+      
+      <h2> Deposite Here</h2><br>
+      <label>Recipent Address</label>
+      <input type="text" id="recipentAddress" placeholder="Recipient Address">
+      <label>Amount</label>
+      <input type="text" id="amount" placeholder="Amount">
+      <input type="button" id="deposite" value="Deposite">
+      <br>
+
+  </div>
+
+    <div class="jumbotron" style="padding: 20px;">
+      
+        <h2>View Deposite Status And Withdraw Or Confirm Payment From Here</h2><br>
+        <label>Depositor Address(which is also the deposite id)</label>
+        <input type="button" id="getOwnDepositeStatus" value="Get Deposite Status">
+        <input type="button" id="getOwnDepositeFullInfo" value="Get Deposite Full Info">
+        <input type="button" id="withDrawDeposite" value="Withdraw Deposite">
+        <input type="button" id="confirmPayment" value="Confirm Payment">
+        <br>
+
+    </div>
+
+    <diV class="jumbotron">
+      <h3>Results: </h3><br>
+      <p id="depositeOwnStatusResultIn" style="background-color: cadetblue; width: fit-content;"></p>
+    </diV>
+
   </div>
 
   <script>
-      
+      $(function(){
+
+        $('#deposite').on("click", function(){
+            let deposite = {
+
+                    depositorAddress		    : $("#depositorOwnAddress").val(), 
+                    depositorPrivateKey	    : $("#depositorOwnPrivateKey").val(), 
+                    recipeintAddress 		    : $("#recipentAddress").val(), 
+                    amount				          : $("#amount").val()
+              }
+            
+              if( !deposite.depositorAddress || !deposite.depositorPrivateKey || !deposite.recipeintAddress || !deposite.amount){
+                alert("depositor Address, depositor private key, recipient address and amount field can not be null");
+                return;
+              }
+
+            
+
+              $.ajax({
+                type: "POST",
+                url:"/deposite/creation",
+                data: deposite,
+                success: function(value){
+                            $("#depositeOwnStatusResultIn").text(value);
+                            console.log(value);
+                          },
+                error:    function(err){
+                            $("#depositeOwnStatusResultIn").text(err);
+                            console.log(err);
+                          }
+              })
+
+        })
+
+
+
+      })
   </script>
 </body>
 </html>

@@ -101,18 +101,20 @@ async function createDeposite(  depositorAddress,
                                 ){
     let responseFromFunction = {};
     try{
+
         let contractObj = await getContract();
         let noneInfo    = await getNonceForAddress(depositorAddress);
         let nonceNo     = noneInfo.data;
     
         transactionObject = {
-            nonce           :    web3.utils.toHex(nonceNo),
+            nonce           : web3.utils.toHex(nonceNo),
             gasLimit        : web3.utils.toHex(300000),
             to              : contractObj._address,
             value           : web3.utils.toHex(web3.utils.toWei(amount, 'ether')),
             data            : contractObj.methods.depositeCreate(recipeintAddress).encodeABI()
         }
-    
+
+        
         let responseFromTheNetwork = await signAndSendTheTransaction(depositorPrivateKey, transactionObject)
         responseFromFunction = responseFromTheNetwork;
     }
@@ -120,7 +122,7 @@ async function createDeposite(  depositorAddress,
         responseFromFunction = {
             status          : "falure",
             message         : "failed execution from createDeposite() function",
-            error_details   : err
+            error_details   : err.message
         }
         
     }
@@ -165,7 +167,7 @@ async function confirmServiceDelivery(depositorAddress, depositorPrivateKey){
         responseFromFunction = {
             status          : "falure",
             message         : "failed execution from confirmServiceDelivery function",
-            error_details   : err
+            error_details   : err.message
         }
         
     }

@@ -5,6 +5,9 @@ const cors = require("cors");
 const path = require("path");
 
 const app = express();
+app.use(bodyParser.urlencoded({
+    extended: true
+  }));
 app.use(bodyParser.json());
 app.use(cors());
 
@@ -32,10 +35,10 @@ app.post("/account/creation",async(req, res)=>{
 
     try{
         let web3Response = await escrowCaller.createAccount();
-        apiResponse = formatSuccessResponse(web3Response)
+        apiResponse = web3Response
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err;
     }
     res.send(apiResponse);
 });
@@ -49,10 +52,10 @@ app.post("/account/balance",async(req, res)=>{
         let requestBody     = req.body;
         let accountAddress  = requestBody.address;
         let web3Response = await escrowCaller.getAccountBalance(accountAddress);
-        apiResponse = formatSuccessResponse(web3Response)
+        apiResponse = web3Response
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -65,10 +68,10 @@ app.post("/account/nonce",async(req, res)=>{
         let requestBody     = req.body;
         let address         = requestBody.address;
         let web3Response = await escrowCaller.getNonceForAddress(address);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response;
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -84,12 +87,17 @@ app.post("/deposite/creation",async(req, res)=>{
         let depositorPrivateKey = requestBody.depositorPrivateKey; 
         let recipeintAddress    = requestBody.recipeintAddress; 
         let amount              = requestBody.amount;
+
+        if(!depositorAddress || !depositorPrivateKey || !recipeintAddress || !amount){
+
+        }
+
         let web3Response = await escrowCaller.createDeposite(depositorAddress, depositorPrivateKey, recipeintAddress, amount);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response;
     
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err;
     }
     res.send(apiResponse);
 });
@@ -104,11 +112,11 @@ app.post("/deposite/confirmation",async(req, res)=>{
         let depositorAddress    = requestBody.depositorAddress; 
         let depositorPrivateKey = requestBody.depositorPrivateKey;
         let web3Response = await escrowCaller.confirmServiceDelivery(depositorAddress, depositorPrivateKey);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response
     
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err;
     }
     res.send(apiResponse);
 });
@@ -124,10 +132,10 @@ app.post("/deposite/unlock",async(req, res)=>{
         let depositorAddress    = requestBody.depositorAddress; 
         let arbitrorPrivateKey  = requestBody.arbitrorPrivateKey;
         let web3Response = await escrowCaller.unlockDeposite(arbitrorAddress, depositorAddress, arbitrorPrivateKey);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response;
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -141,10 +149,10 @@ app.post("/deposite/withdraw",async(req, res)=>{
         let depositorAddress    = requestBody.depositorAddress;
         let depositorPrivateKey = requestBody.depositorPrivateKey;
         let web3Response = await escrowCaller.withdrawDeposite(depositorAddress, depositorPrivateKey);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -158,10 +166,10 @@ app.post("/deposite/status",async(req, res)=>{
         let requestBody             = req.body;
         let depositorAddress        = requestBody.depositorAddress;
         let web3Response = await escrowCaller.getDepositStatus(depositorAddress);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -172,10 +180,10 @@ app.post("/contract/balance",async(req, res)=>{
 
     try{
         let web3Response = await escrowCaller.getContractBalance();
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err
     }
     res.send(apiResponse);
 });
@@ -189,10 +197,10 @@ app.post("/deposite/info",async(req, res)=>{
         let requestBody                 = req.body;
         let depositorAddress            = requestBody.depositorAddress;
         let web3Response = await escrowCaller.getDepositeInfo(depositorAddress);
-        apiResponse = formatSuccessResponse(web3Response);
+        apiResponse = web3Response;
     }
     catch(err){
-        apiResponse = formatFailureResponse(err);
+        apiResponse = err;
     }
     res.send(apiResponse);
 });

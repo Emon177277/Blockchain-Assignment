@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Sample Site</title>
+  <title>Arbitror Page</title>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
   <style>
     body { padding-top: 50px; }
@@ -12,59 +12,50 @@
   integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4="
   crossorigin="anonymous">
 </script>
+<script src="apicallerarbitror.js"></script>
 </head>
 <body>
 
   <div class="container">
     <div class="jumbotron">
-      <h1>arbitror page</h1>
+      <h1>Arbitror page</h1>
+      <a href="depositor">Go To Depositor Page</a>
     </div>
 
-    <div class="jumbotron" id="Arbitror_Settings">
-
+    <div class="jumbotron" style="padding: 5px;">
+      <h2>Set Arbitror Credentials Here</h2><br>
+      <label>Arbitror Account Address</label>
+      <input type="text" id="arbitrorAddress" placeholder="Arbitror Address">
+      <label>Arbitror Account PrivateKey</label>
+      <input type="text" id="arbitrorPrivateKey" placeholder="Arbitror Private Key">
     </div>
 
-    <div class="jumbotron" id="Arbitror_Settings">
+    <div class="jumbotron" style="padding: 20px;">
 
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
-    </div>
-
-    <div class="jumbotron" id="Arbitror_Settings">
-
+        <h2>View Deposite Status And Unlock Here</h2><br>
+        <label>Depositor Address(which is also the deposite id)</label>
+        <input type="text" id="depositorAddress" placeholder="Depositor Address" >
+        <input type="button" id="getDepositeStatus" value="Get Deposite Status">
+        <input type="button" id="getDepositeFullInfo" value="Get Deposite Full Info">
+        <input type="button" id="unlockDeposite" value="Unlock This Deposite"><br>
+      
     </div>
 
     <diV class="jumbotron">
-      <p id="responseFromApi"> Response will be here </p>
+      <h3>Results: </h3><br>
+      <p id="depositeStatusResult" style="background-color: cadetblue; width: fit-content;"></p>
     </diV>
+
   </div>
 
   
 
   <script>
-      
+      $(function(){
+
+
+
+      })
   </script>
 
 </body>
