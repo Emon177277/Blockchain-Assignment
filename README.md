@@ -1,4 +1,4 @@
-# Blockchain-Assignment 
+# __Blockchain-Assignment__ 
 ## __Part - 1 : Running the network and deploying the smart contract in the network__  
 ---  
 
@@ -69,13 +69,31 @@ node index.js
 
 - this will start the server and the api will be available which you can use to communicate with the web3 client. its running in [localhost:8085]().
 
-- I've provided a __'web3.json'__ file which you can import in post man to communicate with the api 
+- I've provided a __'web3.json'__ file which you can import in post man to communicate with the api  
 
-### ___*note___ : For the solidity descriptions checkout the  [__Escrow.sol__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/Solidity%20Task/contracts/Escrow.sol) file. I've provided detailed description on how each function works in this file.
+___Step 3 : Use the Dapp as a regular depositor user___
+- go to [localhost:8085](http://localhost:8085/) and click on the [Go to Depositor Section](http://localhost:8085/static/depositor). 
 
-### ___*note___ : For the contract interacction part please take a look at the [__EscrowCaller.js__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/Web3%20Client%20Task/EscrowCaller.js) file. I've also written detailed description of how each function is working here.
+- I haven't used a database or any user management mechanism in the system ___(as that was not the goal)___ in my application yet, due to time contraints. So everytime you make a request that requires your identification, you need to fill up the necessary informations before you call that function.  
 
-##### note: I'm still woking on the frontend part of the project, once I get done with that, You no longer need to use post man to use the api.  But till then, I'll provide the details in the section below.
+- if you first click on the buttons, and if they require inputs, they will let you know which fields should be filled up before you execute the function.   
+
+- you can see the result of clicking each button in the __Results__ section at the bottom of the page.
+
+___Step 4 : Use the Dapp as an arbitror___
+- go to [localhost:8085](http://localhost:8085/) and click on the [Go to Arbitror Section](http://localhost:8085/static/arbitror).  
+
+- just like the depositor section, click on any button, it will tell you which fields can not be empty.
+
+- you can see the result of clicking each button in the __Results__ section at the bottom of the page.
+
+
+
+### ___*note___ : For the solidity descriptions checkout the  [__Escrow.sol__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/Solidity%20Task/contracts/Escrow.sol) file. I've provided detailed descriptions on how each function works right above the functions themselves as comments.
+
+### ___*note___ : For the contract interacction part please take a look at the [__EscrowCaller.js__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/Web3%20Client%20Task/EscrowCaller.js) file. I've also written detailed descriptions of how each function is working here.  
+
+
 
 
 
