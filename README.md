@@ -93,6 +93,8 @@ ___Step 4 : Use the Dapp as an arbitror___
 
 ### ___*note___ : For the contract interacction part please take a look at the [__EscrowCaller.js__](https://github.com/Emon177277/Blockchain-Assignment/blob/main/Web3%20Client%20Task/EscrowCaller.js) file. I've also written detailed descriptions of how each function is working here.  
 
+### ___*note___ : Since I did not use a database so I used a javascript set to keep track of the diposits that were approved by the depositer so that their reciepents could be payed. The recipents will be payed immedietly when the arbitror unlocks these deposits for them.
+
 
 
 
