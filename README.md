@@ -1,4 +1,4 @@
-# __Blockchain-Assignment__ 
+# __Escro Project__ 
 ## __Part - 1 : Running the network and deploying the smart contract in the network__  
 ---  
 
